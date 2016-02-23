@@ -27,3 +27,11 @@ public class Slot : MonoBehaviour, IDropHandler
     }
     #endregion
 }
+
+namespace UnityEngine.EventSystems
+{
+    public interface IHasChanged : IEventSystemHandler
+    {
+        void HasChanged();
+    }
+}

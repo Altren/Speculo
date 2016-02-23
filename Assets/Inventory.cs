@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class Level : MonoBehaviour, IHasChanged
+public class Inventory : MonoBehaviour, IHasChanged
 {
     [SerializeField]
     Transform slots;
@@ -12,7 +12,6 @@ public class Level : MonoBehaviour, IHasChanged
 
     public Image slotPrefab;
     public Image itemPrefab;
-    public Image borderPrefab;
     
     void Start()
     {
@@ -20,18 +19,11 @@ public class Level : MonoBehaviour, IHasChanged
         int LevelSize = 4;
         for (int i = 0; i < LevelSize; i++)
         {
-            for (int j = 0; j < LevelSize; j++)
-            {
-                Image slot = (Image)Instantiate(slotPrefab);
-                slot.transform.SetParent(transform, false);
+            Image slot = (Image)Instantiate(slotPrefab);
+            slot.transform.SetParent(transform, false);
 
-                int rand = Random.Range(0, 2);
-                if (rand != 0)
-                {
-                    Image item = (Image)Instantiate(itemPrefab);
-                    item.transform.SetParent(slot.transform, false);
-                }
-            }
+            Image item = (Image)Instantiate(itemPrefab);
+            item.transform.SetParent(slot.transform, false);
         }
 
         HasChanged();
