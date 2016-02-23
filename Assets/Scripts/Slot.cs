@@ -1,31 +1,33 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Slot : MonoBehaviour, IDropHandler
 {
-    public GameObject item
+    public Image item;
+    
+    void Start()
     {
-        get
+        if (transform.childCount > 0)
         {
-            if (transform.childCount > 0)
+            for (int i = 0; i < transform.childCount; i++)
             {
-                return transform.GetChild(0).gameObject;
+                if (item)
+                    break;
+                item = transform.GetChild(0).gameObject.GetComponent<Image>();
             }
-            return null;
         }
     }
 
-    #region IDropHandler implementation
     public void OnDrop(PointerEventData eventData)
     {
         if (!item)
         {
             DragHelper.itemBeingDragged.transform.SetParent(transform);
+            item = DragHelper.itemBeingDragged;
             ExecuteEvents.ExecuteHierarchy<IHasChanged>(gameObject, null, (x, y) => x.HasChanged());
         }
     }
-    #endregion
 }
 
 namespace UnityEngine.EventSystems

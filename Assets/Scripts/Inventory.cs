@@ -8,24 +8,10 @@ public class Inventory : MonoBehaviour, IHasChanged
     [SerializeField]
     Transform slots;
     [SerializeField]
-    Text inventoryText;
-
-    public Image slotPrefab;
-    public Image itemPrefab;
+    Text debugText;
     
     void Start()
     {
-        GridLayoutGroup grid = this.GetComponent<GridLayoutGroup>();
-        int LevelSize = 4;
-        for (int i = 0; i < LevelSize; i++)
-        {
-            Image slot = (Image)Instantiate(slotPrefab);
-            slot.transform.SetParent(transform, false);
-
-            Image item = (Image)Instantiate(itemPrefab);
-            item.transform.SetParent(slot.transform, false);
-        }
-
         HasChanged();
     }
 
@@ -36,14 +22,14 @@ public class Inventory : MonoBehaviour, IHasChanged
         builder.Append(" - ");
         foreach (Transform slotTransform in slots)
         {
-            GameObject item = slotTransform.GetComponent<Slot>().item;
+            Image item = slotTransform.GetComponent<Slot>().item;
             if (item)
             {
                 builder.Append(item.name);
                 builder.Append(" - ");
             }
         }
-        inventoryText.text = builder.ToString();
+        debugText.text = builder.ToString();
     }
     #endregion
 }

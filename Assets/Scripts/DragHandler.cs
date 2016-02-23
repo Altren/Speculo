@@ -6,47 +6,39 @@ using UnityEngine.UI;
 public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     Vector3 startPosition;
-    Transform startParent;
-
-    #region IBeginDragHandler implementation
+    Slot startParent;
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        DragHelper.itemBeingDragged = gameObject;
-
+        startParent = transform.parent.GetComponent<Slot>();
         startPosition = transform.position;
-        startParent = transform.parent;
+
+        startParent.item = null;
+        DragHelper.itemBeingDragged = gameObject.GetComponent<Image>();
+
         GetComponent<CanvasGroup>().blocksRaycasts = false;
         gameObject.transform.SetParent(DragHelper.topRenderTransform);
+
+        ExecuteEvents.ExecuteHierarchy<IHasChanged>(startParent.gameObject, null, (x, y) => x.HasChanged());
     }
-
-    #endregion
-
-    #region IDragHandler implementation
 
     public void OnDrag(PointerEventData eventData)
     {
         transform.position = eventData.position;
     }
 
-    #endregion
-
-    #region IEndDragHandler implementation
-
     public void OnEndDrag(PointerEventData eventData)
     {
-        DragHelper.itemBeingDragged = null;
         GetComponent<CanvasGroup>().blocksRaycasts = true;
         if (transform.parent == DragHelper.topRenderTransform)
         {
-            transform.position = startPosition;
-            gameObject.transform.SetParent(startParent);
-
+            startParent.item = DragHelper.itemBeingDragged;
             // TODO: item dropped to nowhere
-            GetComponent<Image>().sprite = null;
+            transform.position = startPosition;
+            gameObject.transform.SetParent(startParent.transform);
+            //GetComponent<Image>().sprite = null;
+            ExecuteEvents.ExecuteHierarchy<IHasChanged>(startParent.gameObject, null, (x, y) => x.HasChanged());
         }
+        DragHelper.itemBeingDragged = null;
     }
-
-    #endregion
-
 }

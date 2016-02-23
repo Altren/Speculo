@@ -8,7 +8,7 @@ public class Level : MonoBehaviour, IHasChanged
     [SerializeField]
     Transform slots;
     [SerializeField]
-    Text inventoryText;
+    Text debugText;
 
     public Image slotPrefab;
     public Image itemPrefab;
@@ -17,7 +17,7 @@ public class Level : MonoBehaviour, IHasChanged
     void Start()
     {
         GridLayoutGroup grid = this.GetComponent<GridLayoutGroup>();
-        int LevelSize = 4;
+        int LevelSize = 3;
         for (int i = 0; i < LevelSize; i++)
         {
             for (int j = 0; j < LevelSize; j++)
@@ -29,6 +29,7 @@ public class Level : MonoBehaviour, IHasChanged
                 if (rand != 0)
                 {
                     Image item = (Image)Instantiate(itemPrefab);
+                    slot.GetComponent<Slot>().item = item;
                     item.transform.SetParent(slot.transform, false);
                 }
             }
@@ -37,21 +38,19 @@ public class Level : MonoBehaviour, IHasChanged
         HasChanged();
     }
 
-    #region IHasChanged implementation
     public void HasChanged()
     {
         System.Text.StringBuilder builder = new System.Text.StringBuilder();
         builder.Append(" - ");
         foreach (Transform slotTransform in slots)
         {
-            GameObject item = slotTransform.GetComponent<Slot>().item;
+            Image item = slotTransform.GetComponent<Slot>().item;
             if (item)
             {
                 builder.Append(item.name);
                 builder.Append(" - ");
             }
         }
-        inventoryText.text = builder.ToString();
+        debugText.text = builder.ToString();
     }
-    #endregion
 }

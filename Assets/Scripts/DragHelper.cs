@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class DragHelper : MonoBehaviour
 {
     public static Transform topRenderTransform;
-    public static GameObject itemBeingDragged;
+    public static Image itemBeingDragged;
 
     // Use this for initialization
     void Start()
