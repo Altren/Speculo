@@ -5,17 +5,14 @@ using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour, IHasChanged
 {
-    [SerializeField]
-    Transform slots;
-    [SerializeField]
-    Text debugText;
+    public Transform slots;
+    public Text debugText;
     
     void Start()
     {
         HasChanged();
     }
-
-    #region IHasChanged implementation
+    
     public void HasChanged()
     {
         System.Text.StringBuilder builder = new System.Text.StringBuilder();
@@ -31,5 +28,4 @@ public class Inventory : MonoBehaviour, IHasChanged
         }
         debugText.text = builder.ToString();
     }
-    #endregion
 }
