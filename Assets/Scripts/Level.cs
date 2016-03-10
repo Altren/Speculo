@@ -89,17 +89,13 @@ public class Level : MonoBehaviour, IHasChanged
         }
     }
 
-    LineRenderer line = null;
+    LineDrawer line = null;
 
     public void HasChanged()
     {
 
         System.Text.StringBuilder builder = new System.Text.StringBuilder();
         builder.Append(" - ");
-        if (!line)
-            line = createLine(0);
-        int counter = 0;
-        Vector3 lastPosition = new Vector3(0, 0, 0);
         /*foreach (Slot slot in GetComponentsInChildren<Slot>())
         {
             if (slot.item != null)
@@ -110,6 +106,8 @@ public class Level : MonoBehaviour, IHasChanged
             }
         }*/
 
+        if (line == null)
+            line = new LineDrawer(0, lineMaterial);
 
         for (int i = 0; i < 1/*4*/; i++)
         {
@@ -129,10 +127,12 @@ public class Level : MonoBehaviour, IHasChanged
         b = c;
     }
 
-    private int drawLazerPath(int x, int y, int dx, int dy, LineRenderer line)
+    private int drawLazerPath(int x, int y, int dx, int dy, LineDrawer line)
     {
         int length = 0;
-        Vector3 lastPosition = new Vector3(0, 0, 0);
+
+        line.Reset();
+        line.AddPoint(GetLazerItem(x, y));
 
         x += dx;
         y += dy;
@@ -140,14 +140,8 @@ public class Level : MonoBehaviour, IHasChanged
         while (x >= 0 && y >= 0 && x < LevelSize && y < LevelSize)
         {
             CellItem item = cellItems[y, x];
-
-            Vector3 position = Camera.main.ScreenToWorldPoint(item.transform.position);
-            Vector3 prePosition = length == 0 ? position : Vector3.MoveTowards(position, lastPosition, 0.001f);
-            line.SetVertexCount(2 * (length + 1));
-            line.SetPosition(2 * length, prePosition);
-            line.SetPosition(2 * length + 1, position);
-            //line.SetPosition(3 * counter + 2, position);
-            lastPosition = position;
+            
+            line.AddPoint(item);
 
             Item.Type mirrorType = Item.Type.None;
             if (item.GetComponent<Slot>().item != null)
@@ -184,20 +178,30 @@ public class Level : MonoBehaviour, IHasChanged
 
             length++;
         }
+
+        line.AddPoint(GetLazerItem(x, y));
+
         return length;
     }
 
-    //method to create line
-    private LineRenderer createLine(int index)
+    LaserItem GetLazerItem(int x, int y)
     {
-        //create a new empty gameobject and line renderer component
-        line = new GameObject("Line" + index).gameObject.AddComponent<LineRenderer>();
-        //assign the material to the line
-        line.material = lineMaterial;
-        //set the width
-        line.SetWidth(0.15f, 0.15f);
-        //render line to the world origin and not to the object's position
-        line.useWorldSpace = true;
-        return line;
+        if (y == -1)
+        {
+            return lazerItems[0, x];
+        }
+        if (x == LevelSize)
+        {
+            return lazerItems[1, y];
+        }
+        if (y == LevelSize)
+        {
+            return lazerItems[2, x];
+        }
+        if (x == -1)
+        {
+            return lazerItems[3, y];
+        }
+        return null;
     }
 }
