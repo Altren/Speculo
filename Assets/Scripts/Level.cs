@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -24,13 +25,12 @@ public class Level : MonoBehaviour, IHasChanged
     Image[] uiGrids;
 
     public Material lineMaterial;
-    //number of lines drawn
-    private int currLines = 0;
 
     CellItem[,] cellItems;
     LaserItem[,] lazerItems;
 
     int CellSize = 80;
+    int LevelSize = 4;
 
     void Start()
     {
@@ -43,7 +43,6 @@ public class Level : MonoBehaviour, IHasChanged
             ClearTestChilds(item.transform);
         }
 
-        int LevelSize = 4;
         cellItems = new CellItem[LevelSize, LevelSize];
         lazerItems = new LaserItem[4, LevelSize];
         
@@ -69,7 +68,7 @@ public class Level : MonoBehaviour, IHasChanged
 
                 cellItems[i, j] = cellItem;
 
-                int rand = Random.Range(0, 2);
+                int rand = UnityEngine.Random.Range(0, 2);
                 if (rand != 0)
                 {
                     Image item = (Image)Instantiate(itemPrefab);
@@ -94,48 +93,107 @@ public class Level : MonoBehaviour, IHasChanged
 
     public void HasChanged()
     {
+
         System.Text.StringBuilder builder = new System.Text.StringBuilder();
         builder.Append(" - ");
         if (!line)
-            line = createLine();
+            line = createLine(0);
         int counter = 0;
         Vector3 lastPosition = new Vector3(0, 0, 0);
-        foreach (Slot slot in GetComponentsInChildren<Slot>())
+        /*foreach (Slot slot in GetComponentsInChildren<Slot>())
         {
             if (slot.item != null)
             {
-                if (counter < 5)
-                {
-                    Vector3 position = Camera.main.ScreenToWorldPoint(slot.transform.position);
-                    Vector3 prePosition = counter == 0 ? position : Vector3.MoveTowards(position, lastPosition, 0.001f);
+                builder.Append(slot.item.sprite.name);
+                builder.Append(slot.GetComponent<RectTransform>().anchoredPosition3D);
+                builder.Append(" - ");
+            }
+        }*/
 
-                    line.SetPosition(2 * counter, prePosition);
-                    line.SetPosition(2 * counter + 1, position);
-                    //line.SetPosition(3 * counter + 2, position);
-                    lastPosition = position;
-                    counter++;
 
-                    builder.Append(position);
-                    builder.Append(" - ");
-                }
-                //builder.Append(slot.name);
-                //builder.Append(slot.GetComponent<RectTransform>().anchoredPosition3D);
-                //builder.Append(" - ");
+        for (int i = 0; i < 1/*4*/; i++)
+        {
+            for (int j = 0; j < 1/*LevelSize*/; j++)
+            {
+                drawLazerPath(-1, 0, 1, 0, line);
             }
         }
-        
+
         debugText.text = builder.ToString();
     }
 
+    static void Swap<T>(ref T a, ref T b)
+    {
+        T c = a;
+        a = b;
+        b = c;
+    }
+
+    private int drawLazerPath(int x, int y, int dx, int dy, LineRenderer line)
+    {
+        int length = 0;
+        Vector3 lastPosition = new Vector3(0, 0, 0);
+
+        x += dx;
+        y += dy;
+
+        while (x >= 0 && y >= 0 && x < LevelSize && y < LevelSize)
+        {
+            CellItem item = cellItems[y, x];
+
+            Vector3 position = Camera.main.ScreenToWorldPoint(item.transform.position);
+            Vector3 prePosition = length == 0 ? position : Vector3.MoveTowards(position, lastPosition, 0.001f);
+            line.SetVertexCount(2 * (length + 1));
+            line.SetPosition(2 * length, prePosition);
+            line.SetPosition(2 * length + 1, position);
+            //line.SetPosition(3 * counter + 2, position);
+            lastPosition = position;
+
+            Item.Type mirrorType = Item.Type.None;
+            if (item.GetComponent<Slot>().item != null)
+            {
+                mirrorType = (Item.Type)Enum.Parse(typeof(Item.Type), item.GetComponent<Slot>().item.sprite.name);
+            }
+
+            if (mirrorType == Item.Type.Item_Mirror_BR_TL)
+            {
+                Swap(ref dx, ref dy);
+                dx = -dx;
+                dy = -dy;
+            }
+            else if(mirrorType == Item.Type.Item_Mirror_TR_BL)
+            {
+                Swap(ref dx, ref dy);
+            }
+            else if (mirrorType == Item.Type.Item_Mirror_R_L)
+            {
+                dx = -dx;
+            }
+            else if (mirrorType == Item.Type.Item_Mirror_T_B)
+            {
+                dy = -dy;
+            }
+            else if (mirrorType == Item.Type.Item_Mirror_T_R_B_L)
+            {
+                dx = -dx;
+                dy = -dy;
+            }
+
+            x += dx;
+            y += dy;
+
+            length++;
+        }
+        return length;
+    }
+
     //method to create line
-    private LineRenderer createLine()
+    private LineRenderer createLine(int index)
     {
         //create a new empty gameobject and line renderer component
-        line = new GameObject("Line" + currLines).gameObject.AddComponent<LineRenderer>();
+        line = new GameObject("Line" + index).gameObject.AddComponent<LineRenderer>();
         //assign the material to the line
         line.material = lineMaterial;
-        //set the number of points to the line
-        line.SetVertexCount(10);
         //set the width
         line.SetWidth(0.15f, 0.15f);
         //render line to the world origin and not to the object's position
