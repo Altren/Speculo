@@ -13,11 +13,11 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         startParent = transform.parent.GetComponent<Slot>();
         startPosition = transform.position;
 
+        DragHelper.itemBeingDragged = startParent.item;
         startParent.item = null;
-        DragHelper.itemBeingDragged = gameObject.GetComponent<Image>();
 
         GetComponent<CanvasGroup>().blocksRaycasts = false;
-        gameObject.transform.SetParent(DragHelper.topRenderTransform);
+        DragHelper.itemBeingDragged.transform.SetParent(DragHelper.topRenderTransform);
 
         ExecuteEvents.ExecuteHierarchy<IHasChanged>(startParent.gameObject, null, (x, y) => x.HasChanged());
     }

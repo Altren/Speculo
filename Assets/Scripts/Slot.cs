@@ -23,9 +23,22 @@ public class Slot : MonoBehaviour, IDropHandler
     {
         if (!item)
         {
-            DragHelper.itemBeingDragged.transform.SetParent(transform);
-            item = DragHelper.itemBeingDragged;
+            SetItem(DragHelper.itemBeingDragged);
             ExecuteEvents.ExecuteHierarchy<IHasChanged>(gameObject, null, (x, y) => x.HasChanged());
+        }
+    }
+
+    public void SetItem(Image newItem)
+    {
+        if (item && !newItem)
+        {
+            item = null;
+            Destroy(item);
+        }
+        if (!item && newItem)
+        {
+            newItem.transform.SetParent(transform, false);
+            item = newItem;
         }
     }
 }

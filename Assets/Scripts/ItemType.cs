@@ -9,6 +9,6 @@ class Item
         Item_Mirror_R_L,
         Item_Mirror_T_B,
         Item_Mirror_T_R_B_L,
-        Item_Mirror_Warp
+        Item_Warp
     }
 }

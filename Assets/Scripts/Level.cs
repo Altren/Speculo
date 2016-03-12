@@ -10,7 +10,6 @@ using LaserItem = UnityEngine.UI.Image;
 public class Level : MonoBehaviour, IHasChanged
 {
     public Image slotPrefab;
-    public Image itemPrefab;
     public Image lazerPrefab;
 
     public Text debugText;
@@ -34,7 +33,7 @@ public class Level : MonoBehaviour, IHasChanged
 
     void Start()
     {
-        uiGrids = new Image[] {gridPanel, leftLasers, rightLasers, topLasers, bottomLasers};
+        uiGrids = new Image[] { gridPanel, leftLasers, rightLasers, topLasers, bottomLasers };
         lazerGrids = new Image[] { topLasers, rightLasers, bottomLasers, leftLasers };
         // remove editor test childrens
         foreach (var item in uiGrids)
@@ -45,7 +44,7 @@ public class Level : MonoBehaviour, IHasChanged
 
         cellItems = new CellItem[LevelSize, LevelSize];
         lazerItems = new LaserItem[4, LevelSize];
-        
+
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < LevelSize; j++)
@@ -67,18 +66,25 @@ public class Level : MonoBehaviour, IHasChanged
                 cellItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
 
                 cellItems[i, j] = cellItem;
-
-                int rand = UnityEngine.Random.Range(0, 2);
-                if (rand != 0)
-                {
-                    Image item = (Image)Instantiate(itemPrefab);
-                    cellItem.GetComponent<Slot>().item = item;
-                    item.transform.SetParent(cellItem.transform, false);
-                }
             }
         }
 
-        HasChanged();
+        //HasChanged();
+
+        for (int i = 0; i < LevelSize; i++)
+        {
+            for (int j = 0; j < LevelSize; j++)
+            {
+                int rand = UnityEngine.Random.Range(0, 7);
+                if (rand != 0)
+                {
+                    
+                    Item.Type type = (Item.Type)rand;
+                    Image newItem = (Image)Instantiate(Resources.Load(type.ToString(), typeof(Image)));
+                    cellItems[i, j].GetComponent<Slot>().SetItem(newItem);
+                }
+            }
+        }
     }
 
     private void ClearTestChilds(Transform panel)
