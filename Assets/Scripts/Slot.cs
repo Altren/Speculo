@@ -24,6 +24,7 @@ public class Slot : MonoBehaviour, IDropHandler
             {
                 Image newItem = (Image)Instantiate(Resources.Load(slotItemType.ToString(), typeof(Image)));
                 newItem.transform.SetParent(transform, false);
+                newItem.rectTransform.SetAsFirstSibling();
                 item = newItem;
             }
         }
@@ -56,6 +57,7 @@ public class Slot : MonoBehaviour, IDropHandler
         if (!item || slotItemType != Item.Type.None && slotItemType == GetItemType(DragHelper.itemBeingDragged))
         {
             AddItem(DragHelper.itemBeingDragged);
+            DragHelper.itemBeingDragged = null;
             ExecuteEvents.ExecuteHierarchy<IHasChanged>(gameObject, null, (x, y) => x.HasChanged());
         }
     }
@@ -65,6 +67,7 @@ public class Slot : MonoBehaviour, IDropHandler
         if (item)
             Destroy(item.gameObject);
         newItem.transform.SetParent(transform, true);
+        newItem.rectTransform.SetAsFirstSibling();
         item = newItem;
         itemsCount++;
     }

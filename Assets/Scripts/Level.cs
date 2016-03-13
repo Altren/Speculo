@@ -28,6 +28,11 @@ public class Level : MonoBehaviour, IHasChanged
     GameObject bottomLasers = null;
     [SerializeField]
     Inventory inventory = null;
+    
+    [SerializeField]
+    Text sizeText = null;
+    [SerializeField]
+    Text difficultyText = null;
 
     GameObject[] laserGrids;
     GameObject[] uiGrids;
@@ -36,18 +41,24 @@ public class Level : MonoBehaviour, IHasChanged
     LaserItem[,] laserItems;
 
     LineDrawer[,] laserLines;
-
-    int CellSize = 80;
+    
     int LevelSize = 4;
+    int Difficulty = 30;
 
     void Start()
     {
         uiGrids = new GameObject[] { gridPanel, leftLasers, rightLasers, topLasers, bottomLasers };
         laserGrids = new GameObject[] { topLasers, rightLasers, bottomLasers, leftLasers };
-        // remove editor test childrens
+        
+        GenerateNewLevel();
+
+        HasChanged();
+    }
+
+    private void CreateLevelUiGrid()
+    {
         foreach (var item in uiGrids)
         {
-            item.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
             ClearTestChilds(item.transform);
         }
 
@@ -61,10 +72,9 @@ public class Level : MonoBehaviour, IHasChanged
             {
                 LaserItem laserItem = Instantiate(laserPrefab).GetComponent<LaserItem>();
                 laserItem.transform.SetParent(laserGrids[i].transform, false);
-                laserItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
 
                 laserItems[i, j] = laserItem;
-                laserLines[i, j] = new LineDrawer(i * LevelSize + j, lineMaterial);
+                laserLines[i, j] = new LineDrawer(i * LevelSize + j, lineMaterial, laserItem.gameObject);
 
                 int iCopy = i;
                 int jCopy = j;
@@ -87,23 +97,61 @@ public class Level : MonoBehaviour, IHasChanged
             {
                 CellItem cellItem = Instantiate(slotPrefab).GetComponent<Slot>();
                 cellItem.transform.SetParent(gridPanel.transform, false);
-                cellItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
 
                 cellItems[i, j] = cellItem;
             }
         }
 
-        GenerateNewLevel();
+        FitGridToScreen();
+    }
 
-        HasChanged();
+    int lastWidth = 0;
+    int lastHeight = 0;
+    void Update()
+    {
+        if (lastWidth != Screen.width || lastHeight != Screen.height)
+        {
+            lastWidth = Screen.width;
+            lastHeight = Screen.height;
+            FitGridToScreen();
+        }
+    }
+
+    private void FitGridToScreen()
+    {
+        int freeWidth = Screen.width;
+        int freeHeight = Screen.height - 80/*(int)inventory.GetComponent<RectTransform>().rect.height*/;
+        int cellSize = Math.Min(freeWidth, freeHeight) / (LevelSize + 2);
+        // remove previous childrens
+        foreach (var item in uiGrids)
+        {
+            item.GetComponent<GridLayoutGroup>().cellSize = new Vector2(cellSize, cellSize);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < LevelSize; j++)
+            {
+                laserItems[i, j].GetComponent<GridLayoutGroup>().cellSize = new Vector2(cellSize, cellSize);
+            }
+        }
+        for (int i = 0; i < LevelSize; i++)
+        {
+            for (int j = 0; j < LevelSize; j++)
+            {
+                cellItems[i, j].GetComponent<GridLayoutGroup>().cellSize = new Vector2(cellSize, cellSize);
+            }
+        }
     }
 
     static int counter = 0;
     private void GenerateNewLevel()
     {
+        CreateLevelUiGrid();
+        ClearInventory();
         counter++;
         UnityEngine.Random.seed = counter;
-        int difficulty = 10; // original game had 10, 25, 40 for easy, medium, hard
+        int difficulty = Difficulty; // original game had 10, 25, 40 for easy, medium, hard
         for (int i = 0; i < LevelSize; i++)
         {
             for (int j = 0; j < LevelSize; j++)
@@ -135,11 +183,13 @@ public class Level : MonoBehaviour, IHasChanged
             }
         }
 
-        ResetInventory();
-        HasChanged();
+        MoveAllItemsToInventory();
+
+        UpdateLevelSizeText();
+        UpdateDifficultyText();
     }
 
-    private void ResetInventory()
+    private void MoveAllItemsToInventory()
     {
         for (int i = 0; i < LevelSize; i++)
         {
@@ -152,6 +202,17 @@ public class Level : MonoBehaviour, IHasChanged
                 cellItems[i, j].DestroyItem();
             }
         }
+        HasChanged();
+    }
+
+    private void ClearInventory()
+    {
+        foreach(var slot in inventory.slots)
+        {
+            slot.Value.DestroyItem();
+        }
+                
+        HasChanged();
     }
 
     private void OnLaserDown(int i, int j)
@@ -199,8 +260,10 @@ public class Level : MonoBehaviour, IHasChanged
             }
         }
 
-        if (itemsDone && lasersDone)
+        if (itemsDone && DragHelper.itemBeingDragged == null && lasersDone)
+        {
             GenerateNewLevel();
+        }
     }
 
     static void Swap<T>(ref T a, ref T b)
@@ -304,5 +367,55 @@ public class Level : MonoBehaviour, IHasChanged
             return laserItems[3, y];
         }
         return null;
+    }
+
+    public void IncreaseLevelSize()
+    {
+        if (LevelSize < 12)
+            LevelSize++;
+        
+        GenerateNewLevel();
+    }
+
+    public void DecreaseLevelSize()
+    {
+        if (LevelSize > 3)
+            LevelSize--;
+        
+        GenerateNewLevel();
+    }
+
+    public void IncreaseDifficulty()
+    {
+        if (Difficulty < 100)
+            Difficulty += 10;
+        
+        GenerateNewLevel();
+    }
+
+    public void DecreaseDifficulty()
+    {
+        if (Difficulty > 10)
+            Difficulty -= 10;
+        
+        GenerateNewLevel();
+    }
+
+    private void UpdateLevelSizeText()
+    {
+        sizeText.text = "Size: " + LevelSize.ToString();
+        if (LevelSize == 2)
+            sizeText.text += " (Min)";
+        if (LevelSize == 12)
+            sizeText.text += " (Max)";
+    }
+
+    private void UpdateDifficultyText()
+    {
+        difficultyText.text = "Difficulty: " + (Difficulty / 10).ToString();
+        if (Difficulty == 10)
+            difficultyText.text += " (Min)";
+        if (Difficulty == 100)
+            difficultyText.text += " (Max)";
     }
 }

@@ -6,9 +6,9 @@ class LineDrawer
     Vector3 lastPosition = new Vector3(0, 0, 0);
     int pointsCount = 0;
 
-    public LineDrawer(int index, Material lineMaterial)
+    public LineDrawer(int index, Material lineMaterial, GameObject parent)
     {
-        lineRenderer = new GameObject("Line" + index).gameObject.AddComponent<LineRenderer>();
+        lineRenderer = parent.AddComponent<LineRenderer>();
         lineRenderer.material = lineMaterial;
         lineRenderer.SetWidth(0.15f, 0.15f);
         lineRenderer.useWorldSpace = true;
