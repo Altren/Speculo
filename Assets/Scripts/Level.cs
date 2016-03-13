@@ -71,18 +71,44 @@ public class Level : MonoBehaviour, IHasChanged
 
         //HasChanged();
 
+        GenerateNewLevel();
+    }
+
+    private void GenerateNewLevel()
+    {
+        int difficulty = 40; // original game had 10, 25, 40 for easy, medium, hard
         for (int i = 0; i < LevelSize; i++)
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                int rand = UnityEngine.Random.Range(0, 7);
-                if (rand != 0)
+                Item.Type type = Item.Type.None;
+                int rnd = UnityEngine.Random.Range(0, 100);
+                if (rnd < 100 - difficulty) type = Item.Type.None;                             //(100-difficulty)% empty
+                else if (rnd < 100 - difficulty * 3 / 4) type = Item.Type.Item_Mirror_BR_TL;   //(difficulty/4)% upright
+                else if (rnd < 100 - difficulty * 1 / 2) type = Item.Type.Item_Mirror_TR_BL;   //(difficulty/4)% upleft
+                else if (rnd < 100 - difficulty * 2 / 6) type = Item.Type.Item_Mirror_R_L;     //(difficulty/6)% vertical
+                else if (rnd < 100 - difficulty * 1 / 6) type = Item.Type.Item_Mirror_T_B;     //(difficulty/6)% horizontal
+                else/*if (rnd < 100 - difficulty * 0/6)*/type = Item.Type.Item_Mirror_T_R_B_L; //(difficulty/6)% block
+
+                if (type != Item.Type.None)
                 {
-                    
-                    Item.Type type = (Item.Type)rand;
                     Image newItem = (Image)Instantiate(Resources.Load(type.ToString(), typeof(Image)));
                     cellItems[i, j].GetComponent<Slot>().SetItem(newItem);
                 }
+            }
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < LevelSize; j++)
+            {
+                int[,] directions = new int[4, 2] { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
+                int[,] positions = new int[4, 2] { { j, -1 }, { LevelSize, j }, { j, LevelSize }, { -1, j } };
+
+                var countText = lazerItems[i, j].GetComponentInChildren<Text>();
+                int length = drawLazerPath(positions[i,0], positions[i, 1], directions[i,0], directions[i, 1], null);
+                countText.text = length.ToString();
+                Debug.Log(length.ToString());
             }
         }
     }
@@ -137,8 +163,11 @@ public class Level : MonoBehaviour, IHasChanged
     {
         int length = 0;
 
-        line.Reset();
-        line.AddPoint(GetLazerItem(x, y));
+        if (line != null)
+        {
+            line.Reset();
+            line.AddPoint(GetLazerItem(x, y));
+        }
 
         x += dx;
         y += dy;
@@ -146,8 +175,9 @@ public class Level : MonoBehaviour, IHasChanged
         while (x >= 0 && y >= 0 && x < LevelSize && y < LevelSize)
         {
             CellItem item = cellItems[y, x];
-            
-            line.AddPoint(item);
+
+            if (line != null)
+                line.AddPoint(item);
 
             Item.Type mirrorType = Item.Type.None;
             if (item.GetComponent<Slot>().item != null)
@@ -185,7 +215,8 @@ public class Level : MonoBehaviour, IHasChanged
             length++;
         }
 
-        line.AddPoint(GetLazerItem(x, y));
+        if (line != null)
+            line.AddPoint(GetLazerItem(x, y));
 
         return length;
     }
