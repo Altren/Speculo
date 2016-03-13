@@ -17,20 +17,20 @@ public class Level : MonoBehaviour, IHasChanged
     Material lineMaterial = null;
 
     [SerializeField]
-    Image gridPanel = null;
+    GameObject gridPanel = null;
     [SerializeField]
-    Image leftLasers = null;
+    GameObject leftLasers = null;
     [SerializeField]
-    Image rightLasers = null;
+    GameObject rightLasers = null;
     [SerializeField]
-    Image topLasers = null;
+    GameObject topLasers = null;
     [SerializeField]
-    Image bottomLasers = null;
+    GameObject bottomLasers = null;
     [SerializeField]
     Inventory inventory = null;
 
-    Image[] laserGrids;
-    Image[] uiGrids;
+    GameObject[] laserGrids;
+    GameObject[] uiGrids;
 
     CellItem[,] cellItems;
     LaserItem[,] laserItems;
@@ -42,8 +42,8 @@ public class Level : MonoBehaviour, IHasChanged
 
     void Start()
     {
-        uiGrids = new Image[] { gridPanel, leftLasers, rightLasers, topLasers, bottomLasers };
-        laserGrids = new Image[] { topLasers, rightLasers, bottomLasers, leftLasers };
+        uiGrids = new GameObject[] { gridPanel, leftLasers, rightLasers, topLasers, bottomLasers };
+        laserGrids = new GameObject[] { topLasers, rightLasers, bottomLasers, leftLasers };
         // remove editor test childrens
         foreach (var item in uiGrids)
         {
