@@ -28,6 +28,8 @@ public class Level : MonoBehaviour, IHasChanged
     CellItem[,] cellItems;
     LaserItem[,] lazerItems;
 
+    LineDrawer[,] lazerLines;
+
     int CellSize = 80;
     int LevelSize = 4;
 
@@ -44,6 +46,7 @@ public class Level : MonoBehaviour, IHasChanged
 
         cellItems = new CellItem[LevelSize, LevelSize];
         lazerItems = new LaserItem[4, LevelSize];
+        lazerLines = new LineDrawer[4, LevelSize];
 
         for (int i = 0; i < 4; i++)
         {
@@ -54,6 +57,22 @@ public class Level : MonoBehaviour, IHasChanged
                 lazerItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
 
                 lazerItems[i, j] = lazerItem;
+                lazerLines[i, j] = new LineDrawer(i * LevelSize + j, lineMaterial);
+
+                //lazerItem.GetComponent<EventTrigger>().OnPointerDown
+
+                int iCopy = i;
+                int jCopy = j;
+                EventTrigger trigger = lazerItem.GetComponent<EventTrigger>();
+                EventTrigger.Entry entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerDown;
+                entry.callback.AddListener((eventData) => { OnLazerDown(iCopy, jCopy); });
+                trigger.triggers.Add(entry);
+
+                entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerUp;
+                entry.callback.AddListener((eventData) => { OnLazerUp(iCopy, jCopy); });
+                trigger.triggers.Add(entry);
             }
         }
 
@@ -102,15 +121,21 @@ public class Level : MonoBehaviour, IHasChanged
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                int[,] directions = new int[4, 2] { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
-                int[,] positions = new int[4, 2] { { j, -1 }, { LevelSize, j }, { j, LevelSize }, { -1, j } };
-
                 var countText = lazerItems[i, j].GetComponentInChildren<Text>();
-                int length = drawLazerPath(positions[i,0], positions[i, 1], directions[i,0], directions[i, 1], null);
+                int length = DrawLazerPath(i, j, false);
                 countText.text = length.ToString();
-                Debug.Log(length.ToString());
             }
         }
+    }
+
+    private void OnLazerDown(int i, int j)
+    {
+        DrawLazerPath(i, j, true);
+    }
+
+    private void OnLazerUp(int i, int j)
+    {
+        ClearLazerPath(i, j);
     }
 
     private void ClearTestChilds(Transform panel)
@@ -121,11 +146,8 @@ public class Level : MonoBehaviour, IHasChanged
         }
     }
 
-    LineDrawer line = null;
-
     public void HasChanged()
     {
-
         System.Text.StringBuilder builder = new System.Text.StringBuilder();
         builder.Append(" - ");
         /*foreach (Slot slot in GetComponentsInChildren<Slot>())
@@ -138,17 +160,6 @@ public class Level : MonoBehaviour, IHasChanged
             }
         }*/
 
-        if (line == null)
-            line = new LineDrawer(0, lineMaterial);
-
-        for (int i = 0; i < 1/*4*/; i++)
-        {
-            for (int j = 0; j < 1/*LevelSize*/; j++)
-            {
-                drawLazerPath(-1, 0, 1, 0, line);
-            }
-        }
-
         debugText.text = builder.ToString();
     }
 
@@ -159,8 +170,20 @@ public class Level : MonoBehaviour, IHasChanged
         b = c;
     }
 
-    private int drawLazerPath(int x, int y, int dx, int dy, LineDrawer line)
+    private int DrawLazerPath(int i, int j, bool drawLine)
     {
+        Debug.Log(i.ToString() + " " + j.ToString());
+        LineDrawer line = null;
+        if (drawLine)
+            line = lazerLines[i, j];
+        int[,] directions = new int[4, 2] { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
+        int[,] positions = new int[4, 2] { { j, -1 }, { LevelSize, j }, { j, LevelSize }, { -1, j } };
+
+        int x = positions[i, 0];
+        int y = positions[i, 1];
+        int dx = directions[i, 0];
+        int dy = directions[i, 1];
+
         int length = 0;
 
         if (line != null)
@@ -219,6 +242,12 @@ public class Level : MonoBehaviour, IHasChanged
             line.AddPoint(GetLazerItem(x, y));
 
         return length;
+    }
+
+    private void ClearLazerPath(int i, int j)
+    {
+        LineDrawer line = lazerLines[i, j];
+        line.Reset();
     }
 
     LaserItem GetLazerItem(int x, int y)
