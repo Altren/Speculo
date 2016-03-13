@@ -54,7 +54,7 @@ public class Slot : MonoBehaviour, IDropHandler
 
     public void OnDrop(PointerEventData eventData)
     {
-        if (!item || slotItemType != Item.Type.None && slotItemType == GetItemType(DragHelper.itemBeingDragged))
+        if (slotItemType == Item.Type.None && !item || slotItemType != Item.Type.None && slotItemType == GetItemType(DragHelper.itemBeingDragged))
         {
             AddItem(DragHelper.itemBeingDragged);
             DragHelper.itemBeingDragged = null;
