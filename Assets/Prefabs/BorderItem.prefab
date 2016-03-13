@@ -31,6 +31,7 @@ GameObject:
   - 225: {fileID: 22525798}
   - 114: {fileID: 11478536}
   - 114: {fileID: 11447012}
+  - 114: {fileID: 11405816}
   m_Layer: 5
   m_Name: BorderItem
   m_TagString: Untagged
@@ -38,6 +39,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &11405816
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 149608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0663209d4b67e743a271b4cd242ccfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  text: {fileID: 11424374}
+  image: {fileID: 11425762}
+  goodLength: {fileID: 21300016, guid: 9f00a6d808cd90e4282ce0e480b41ec2, type: 3}
+  badLength: {fileID: 21300018, guid: 9f00a6d808cd90e4282ce0e480b41ec2, type: 3}
 --- !u!114 &11424374
 MonoBehaviour:
   m_ObjectHideFlags: 1

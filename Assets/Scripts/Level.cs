@@ -4,8 +4,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using CellItem = UnityEngine.UI.Image;
-using LaserItem = UnityEngine.UI.Image;
+using CellItem = Slot;
 
 public class Level : MonoBehaviour, IHasChanged
 {
@@ -26,7 +25,7 @@ public class Level : MonoBehaviour, IHasChanged
     public Material lineMaterial;
 
     CellItem[,] cellItems;
-    LaserItem[,] lazerItems;
+    LazerItem[,] lazerItems;
 
     LineDrawer[,] lazerLines;
 
@@ -45,14 +44,14 @@ public class Level : MonoBehaviour, IHasChanged
         }
 
         cellItems = new CellItem[LevelSize, LevelSize];
-        lazerItems = new LaserItem[4, LevelSize];
+        lazerItems = new LazerItem[4, LevelSize];
         lazerLines = new LineDrawer[4, LevelSize];
 
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                LaserItem lazerItem = (LaserItem)Instantiate(lazerPrefab);
+                LazerItem lazerItem = Instantiate(lazerPrefab).GetComponent<LazerItem>();
                 lazerItem.transform.SetParent(lazerGrids[i].transform, false);
                 lazerItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
 
@@ -80,7 +79,7 @@ public class Level : MonoBehaviour, IHasChanged
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                CellItem cellItem = (Image)Instantiate(slotPrefab);
+                CellItem cellItem = Instantiate(slotPrefab).GetComponent<Slot>();
                 cellItem.transform.SetParent(gridPanel.transform, false);
                 cellItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
 
@@ -88,9 +87,9 @@ public class Level : MonoBehaviour, IHasChanged
             }
         }
 
-        //HasChanged();
-
         GenerateNewLevel();
+
+        HasChanged();
     }
 
     private void GenerateNewLevel()
@@ -112,7 +111,7 @@ public class Level : MonoBehaviour, IHasChanged
                 if (type != Item.Type.None)
                 {
                     Image newItem = (Image)Instantiate(Resources.Load(type.ToString(), typeof(Image)));
-                    cellItems[i, j].GetComponent<Slot>().SetItem(newItem);
+                    cellItems[i, j].SetItem(newItem);
                 }
             }
         }
@@ -121,20 +120,20 @@ public class Level : MonoBehaviour, IHasChanged
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                var countText = lazerItems[i, j].GetComponentInChildren<Text>();
-                int length = DrawLazerPath(i, j, false);
-                countText.text = length.ToString();
+                lazerItems[i, j].requiredLength = DrawLazerPath(i, j, false);
             }
         }
     }
 
     private void OnLazerDown(int i, int j)
     {
+        lazerItems[i, j].drawCurrent = true;
         DrawLazerPath(i, j, true);
     }
 
     private void OnLazerUp(int i, int j)
     {
+        lazerItems[i, j].drawCurrent = false;
         ClearLazerPath(i, j);
     }
 
@@ -160,6 +159,15 @@ public class Level : MonoBehaviour, IHasChanged
             }
         }*/
 
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < LevelSize; j++)
+            {
+                var lazerItem = lazerItems[i, j].GetComponent<LazerItem>();
+                lazerItem.currentLength = DrawLazerPath(i, j, false);
+            }
+        }
+
         debugText.text = builder.ToString();
     }
 
@@ -172,7 +180,6 @@ public class Level : MonoBehaviour, IHasChanged
 
     private int DrawLazerPath(int i, int j, bool drawLine)
     {
-        Debug.Log(i.ToString() + " " + j.ToString());
         LineDrawer line = null;
         if (drawLine)
             line = lazerLines[i, j];
@@ -197,15 +204,15 @@ public class Level : MonoBehaviour, IHasChanged
 
         while (x >= 0 && y >= 0 && x < LevelSize && y < LevelSize)
         {
-            CellItem item = cellItems[y, x];
+            CellItem slot = cellItems[y, x];
 
             if (line != null)
-                line.AddPoint(item);
+                line.AddPoint(slot);
 
             Item.Type mirrorType = Item.Type.None;
-            if (item.GetComponent<Slot>().item != null)
+            if (slot.item != null)
             {
-                mirrorType = (Item.Type)Enum.Parse(typeof(Item.Type), item.GetComponent<Slot>().item.sprite.name);
+                mirrorType = (Item.Type)Enum.Parse(typeof(Item.Type), slot.item.sprite.name);
             }
 
             if (mirrorType == Item.Type.Item_Mirror_BR_TL)
@@ -250,7 +257,7 @@ public class Level : MonoBehaviour, IHasChanged
         line.Reset();
     }
 
-    LaserItem GetLazerItem(int x, int y)
+    LazerItem GetLazerItem(int x, int y)
     {
         if (y == -1)
         {

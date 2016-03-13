@@ -36,7 +36,7 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             // TODO: item dropped to nowhere
             transform.position = startPosition;
             gameObject.transform.SetParent(startParent.transform);
-            //GetComponent<Image>().sprite = null;
+
             ExecuteEvents.ExecuteHierarchy<IHasChanged>(startParent.gameObject, null, (x, y) => x.HasChanged());
         }
         DragHelper.itemBeingDragged = null;
