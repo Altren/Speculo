@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class LazerItem : MonoBehaviour
+public class LaserItem : MonoBehaviour
 {
     [SerializeField]
     Text text = null;

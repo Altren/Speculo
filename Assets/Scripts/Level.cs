@@ -8,26 +8,35 @@ using CellItem = Slot;
 
 public class Level : MonoBehaviour, IHasChanged
 {
-    public Image slotPrefab;
-    public Image lazerPrefab;
+    [SerializeField]
+    Image slotPrefab = null;
+    [SerializeField]
+    Image laserPrefab = null;
 
-    public Text debugText;
-    
-    public Image gridPanel;
-    public Image leftLasers;
-    public Image rightLasers;
-    public Image topLasers;
-    public Image bottomLasers;
-    public Image[] lazerGrids;
+    [SerializeField]
+    Material lineMaterial = null;
 
+    [SerializeField]
+    Text debugText = null;
+
+    [SerializeField]
+    Image gridPanel = null;
+    [SerializeField]
+    Image leftLasers = null;
+    [SerializeField]
+    Image rightLasers = null;
+    [SerializeField]
+    Image topLasers = null;
+    [SerializeField]
+    Image bottomLasers = null;
+
+    Image[] laserGrids;
     Image[] uiGrids;
 
-    public Material lineMaterial;
-
     CellItem[,] cellItems;
-    LazerItem[,] lazerItems;
+    LaserItem[,] laserItems;
 
-    LineDrawer[,] lazerLines;
+    LineDrawer[,] laserLines;
 
     int CellSize = 80;
     int LevelSize = 4;
@@ -35,7 +44,7 @@ public class Level : MonoBehaviour, IHasChanged
     void Start()
     {
         uiGrids = new Image[] { gridPanel, leftLasers, rightLasers, topLasers, bottomLasers };
-        lazerGrids = new Image[] { topLasers, rightLasers, bottomLasers, leftLasers };
+        laserGrids = new Image[] { topLasers, rightLasers, bottomLasers, leftLasers };
         // remove editor test childrens
         foreach (var item in uiGrids)
         {
@@ -44,33 +53,31 @@ public class Level : MonoBehaviour, IHasChanged
         }
 
         cellItems = new CellItem[LevelSize, LevelSize];
-        lazerItems = new LazerItem[4, LevelSize];
-        lazerLines = new LineDrawer[4, LevelSize];
+        laserItems = new LaserItem[4, LevelSize];
+        laserLines = new LineDrawer[4, LevelSize];
 
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                LazerItem lazerItem = Instantiate(lazerPrefab).GetComponent<LazerItem>();
-                lazerItem.transform.SetParent(lazerGrids[i].transform, false);
-                lazerItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
+                LaserItem laserItem = Instantiate(laserPrefab).GetComponent<LaserItem>();
+                laserItem.transform.SetParent(laserGrids[i].transform, false);
+                laserItem.GetComponent<GridLayoutGroup>().cellSize = new Vector2(CellSize, CellSize);
 
-                lazerItems[i, j] = lazerItem;
-                lazerLines[i, j] = new LineDrawer(i * LevelSize + j, lineMaterial);
-
-                //lazerItem.GetComponent<EventTrigger>().OnPointerDown
+                laserItems[i, j] = laserItem;
+                laserLines[i, j] = new LineDrawer(i * LevelSize + j, lineMaterial);
 
                 int iCopy = i;
                 int jCopy = j;
-                EventTrigger trigger = lazerItem.GetComponent<EventTrigger>();
+                EventTrigger trigger = laserItem.GetComponent<EventTrigger>();
                 EventTrigger.Entry entry = new EventTrigger.Entry();
                 entry.eventID = EventTriggerType.PointerDown;
-                entry.callback.AddListener((eventData) => { OnLazerDown(iCopy, jCopy); });
+                entry.callback.AddListener((eventData) => { OnLaserDown(iCopy, jCopy); });
                 trigger.triggers.Add(entry);
 
                 entry = new EventTrigger.Entry();
                 entry.eventID = EventTriggerType.PointerUp;
-                entry.callback.AddListener((eventData) => { OnLazerUp(iCopy, jCopy); });
+                entry.callback.AddListener((eventData) => { OnLaserUp(iCopy, jCopy); });
                 trigger.triggers.Add(entry);
             }
         }
@@ -120,21 +127,21 @@ public class Level : MonoBehaviour, IHasChanged
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                lazerItems[i, j].requiredLength = DrawLazerPath(i, j, false);
+                laserItems[i, j].requiredLength = DrawLaserPath(i, j, false);
             }
         }
     }
 
-    private void OnLazerDown(int i, int j)
+    private void OnLaserDown(int i, int j)
     {
-        lazerItems[i, j].drawCurrent = true;
-        DrawLazerPath(i, j, true);
+        laserItems[i, j].drawCurrent = true;
+        DrawLaserPath(i, j, true);
     }
 
-    private void OnLazerUp(int i, int j)
+    private void OnLaserUp(int i, int j)
     {
-        lazerItems[i, j].drawCurrent = false;
-        ClearLazerPath(i, j);
+        laserItems[i, j].drawCurrent = false;
+        ClearLaserPath(i, j);
     }
 
     private void ClearTestChilds(Transform panel)
@@ -163,8 +170,8 @@ public class Level : MonoBehaviour, IHasChanged
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                var lazerItem = lazerItems[i, j].GetComponent<LazerItem>();
-                lazerItem.currentLength = DrawLazerPath(i, j, false);
+                var laserItem = laserItems[i, j].GetComponent<LaserItem>();
+                laserItem.currentLength = DrawLaserPath(i, j, false);
             }
         }
 
@@ -178,11 +185,11 @@ public class Level : MonoBehaviour, IHasChanged
         b = c;
     }
 
-    private int DrawLazerPath(int i, int j, bool drawLine)
+    private int DrawLaserPath(int i, int j, bool drawLine)
     {
         LineDrawer line = null;
         if (drawLine)
-            line = lazerLines[i, j];
+            line = laserLines[i, j];
         int[,] directions = new int[4, 2] { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
         int[,] positions = new int[4, 2] { { j, -1 }, { LevelSize, j }, { j, LevelSize }, { -1, j } };
 
@@ -196,7 +203,7 @@ public class Level : MonoBehaviour, IHasChanged
         if (line != null)
         {
             line.Reset();
-            line.AddPoint(GetLazerItem(x, y));
+            line.AddPoint(GetLaserItem(x, y));
         }
 
         x += dx;
@@ -246,34 +253,34 @@ public class Level : MonoBehaviour, IHasChanged
         }
 
         if (line != null)
-            line.AddPoint(GetLazerItem(x, y));
+            line.AddPoint(GetLaserItem(x, y));
 
         return length;
     }
 
-    private void ClearLazerPath(int i, int j)
+    private void ClearLaserPath(int i, int j)
     {
-        LineDrawer line = lazerLines[i, j];
+        LineDrawer line = laserLines[i, j];
         line.Reset();
     }
 
-    LazerItem GetLazerItem(int x, int y)
+    LaserItem GetLaserItem(int x, int y)
     {
         if (y == -1)
         {
-            return lazerItems[0, x];
+            return laserItems[0, x];
         }
         if (x == LevelSize)
         {
-            return lazerItems[1, y];
+            return laserItems[1, y];
         }
         if (y == LevelSize)
         {
-            return lazerItems[2, x];
+            return laserItems[2, x];
         }
         if (x == -1)
         {
-            return lazerItems[3, y];
+            return laserItems[3, y];
         }
         return null;
     }
