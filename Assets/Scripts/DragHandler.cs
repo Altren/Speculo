@@ -13,8 +13,7 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         startParent = transform.parent.GetComponent<Slot>();
         startPosition = transform.position;
 
-        DragHelper.itemBeingDragged = startParent.item;
-        startParent.item = null;
+        DragHelper.itemBeingDragged = startParent.TakeItem();
 
         GetComponent<CanvasGroup>().blocksRaycasts = false;
         DragHelper.itemBeingDragged.transform.SetParent(DragHelper.topRenderTransform);
@@ -32,10 +31,8 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         GetComponent<CanvasGroup>().blocksRaycasts = true;
         if (transform.parent == DragHelper.topRenderTransform)
         {
-            startParent.item = DragHelper.itemBeingDragged;
+            startParent.AddItem(DragHelper.itemBeingDragged);
             // TODO: item dropped to nowhere
-            transform.position = startPosition;
-            gameObject.transform.SetParent(startParent.transform);
 
             ExecuteEvents.ExecuteHierarchy<IHasChanged>(startParent.gameObject, null, (x, y) => x.HasChanged());
         }

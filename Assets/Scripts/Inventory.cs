@@ -2,30 +2,23 @@
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class Inventory : MonoBehaviour, IHasChanged
 {
-    public Transform slots;
-    public Text debugText;
-    
+    public Transform slotsGrid;
+    public Dictionary<Item.Type, Slot> slots = new Dictionary<Item.Type, Slot>();
+
     void Start()
     {
-        HasChanged();
+        for (int i = (int)Item.Type.Item_Mirror_BR_TL; i <= (int)Item.Type.Item_Warp; ++i)
+        {
+            int slotIdx = i - (int)Item.Type.Item_Mirror_BR_TL;
+            slots[(Item.Type)i] = slotsGrid.GetChild(slotIdx).GetComponent<Slot>();
+        }
     }
     
     public void HasChanged()
     {
-        System.Text.StringBuilder builder = new System.Text.StringBuilder();
-        builder.Append(" - ");
-        foreach (Transform slotTransform in slots)
-        {
-            Image item = slotTransform.GetComponent<Slot>().item;
-            if (item)
-            {
-                builder.Append(item.name);
-                builder.Append(" - ");
-            }
-        }
-        debugText.text = builder.ToString();
     }
 }

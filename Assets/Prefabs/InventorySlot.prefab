@@ -70,7 +70,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 1
+  m_Text: 0
 --- !u!114 &11471616
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -82,7 +82,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b88dc9077b3717d45bd3d3033fd16520, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  item: {fileID: 0}
+  inventorySlot: 1
+  text: {fileID: 11432414}
 --- !u!114 &11472634
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,5 +1,5 @@
 ﻿
-class Item
+public class Item
 {
     public enum Type
     {

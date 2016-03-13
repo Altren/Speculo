@@ -17,9 +17,6 @@ public class Level : MonoBehaviour, IHasChanged
     Material lineMaterial = null;
 
     [SerializeField]
-    Text debugText = null;
-
-    [SerializeField]
     Image gridPanel = null;
     [SerializeField]
     Image leftLasers = null;
@@ -29,6 +26,8 @@ public class Level : MonoBehaviour, IHasChanged
     Image topLasers = null;
     [SerializeField]
     Image bottomLasers = null;
+    [SerializeField]
+    Inventory inventory = null;
 
     Image[] laserGrids;
     Image[] uiGrids;
@@ -99,13 +98,18 @@ public class Level : MonoBehaviour, IHasChanged
         HasChanged();
     }
 
+    static int counter = 0;
     private void GenerateNewLevel()
     {
-        int difficulty = 40; // original game had 10, 25, 40 for easy, medium, hard
+        counter++;
+        UnityEngine.Random.seed = counter;
+        int difficulty = 10; // original game had 10, 25, 40 for easy, medium, hard
         for (int i = 0; i < LevelSize; i++)
         {
             for (int j = 0; j < LevelSize; j++)
             {
+                cellItems[i, j].DestroyItem();
+
                 Item.Type type = Item.Type.None;
                 int rnd = UnityEngine.Random.Range(0, 100);
                 if (rnd < 100 - difficulty) type = Item.Type.None;                             //(100-difficulty)% empty
@@ -118,7 +122,7 @@ public class Level : MonoBehaviour, IHasChanged
                 if (type != Item.Type.None)
                 {
                     Image newItem = (Image)Instantiate(Resources.Load(type.ToString(), typeof(Image)));
-                    cellItems[i, j].SetItem(newItem);
+                    cellItems[i, j].AddItem(newItem);
                 }
             }
         }
@@ -128,6 +132,24 @@ public class Level : MonoBehaviour, IHasChanged
             for (int j = 0; j < LevelSize; j++)
             {
                 laserItems[i, j].requiredLength = DrawLaserPath(i, j, false);
+            }
+        }
+
+        ResetInventory();
+        HasChanged();
+    }
+
+    private void ResetInventory()
+    {
+        for (int i = 0; i < LevelSize; i++)
+        {
+            for (int j = 0; j < LevelSize; j++)
+            {
+                if (cellItems[i, j].itemType != Item.Type.None)
+                {
+                    inventory.slots[cellItems[i, j].itemType].itemsCount++;
+                }
+                cellItems[i, j].DestroyItem();
             }
         }
     }
@@ -154,28 +176,31 @@ public class Level : MonoBehaviour, IHasChanged
 
     public void HasChanged()
     {
-        System.Text.StringBuilder builder = new System.Text.StringBuilder();
-        builder.Append(" - ");
-        /*foreach (Slot slot in GetComponentsInChildren<Slot>())
-        {
-            if (slot.item != null)
-            {
-                builder.Append(slot.item.sprite.name);
-                builder.Append(slot.GetComponent<RectTransform>().anchoredPosition3D);
-                builder.Append(" - ");
-            }
-        }*/
-
+        bool lasersDone = true;
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < LevelSize; j++)
             {
                 var laserItem = laserItems[i, j].GetComponent<LaserItem>();
                 laserItem.currentLength = DrawLaserPath(i, j, false);
+
+                if (laserItem.currentLength != laserItem.requiredLength)
+                    lasersDone = false;
             }
         }
 
-        debugText.text = builder.ToString();
+        bool itemsDone = true;
+        foreach (var slot in inventory.slots)
+        {
+            if (slot.Value.itemsCount != 0)
+            {
+                itemsDone = false;
+                break;
+            }
+        }
+
+        if (itemsDone && lasersDone)
+            GenerateNewLevel();
     }
 
     static void Swap<T>(ref T a, ref T b)
@@ -216,31 +241,27 @@ public class Level : MonoBehaviour, IHasChanged
             if (line != null)
                 line.AddPoint(slot);
 
-            Item.Type mirrorType = Item.Type.None;
-            if (slot.item != null)
-            {
-                mirrorType = (Item.Type)Enum.Parse(typeof(Item.Type), slot.item.sprite.name);
-            }
+            Item.Type itemType = slot.itemType;
 
-            if (mirrorType == Item.Type.Item_Mirror_BR_TL)
+            if (itemType == Item.Type.Item_Mirror_BR_TL)
             {
                 Swap(ref dx, ref dy);
                 dx = -dx;
                 dy = -dy;
             }
-            else if(mirrorType == Item.Type.Item_Mirror_TR_BL)
+            else if(itemType == Item.Type.Item_Mirror_TR_BL)
             {
                 Swap(ref dx, ref dy);
             }
-            else if (mirrorType == Item.Type.Item_Mirror_R_L)
+            else if (itemType == Item.Type.Item_Mirror_R_L)
             {
                 dx = -dx;
             }
-            else if (mirrorType == Item.Type.Item_Mirror_T_B)
+            else if (itemType == Item.Type.Item_Mirror_T_B)
             {
                 dy = -dy;
             }
-            else if (mirrorType == Item.Type.Item_Mirror_T_R_B_L)
+            else if (itemType == Item.Type.Item_Mirror_T_R_B_L)
             {
                 dx = -dx;
                 dy = -dy;
