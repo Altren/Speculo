@@ -404,7 +404,7 @@ public class Level : MonoBehaviour, IHasChanged
     private void UpdateLevelSizeText()
     {
         sizeText.text = "Size: " + LevelSize.ToString();
-        if (LevelSize == 2)
+        if (LevelSize == 3)
             sizeText.text += " (Min)";
         if (LevelSize == 12)
             sizeText.text += " (Max)";
@@ -412,10 +412,12 @@ public class Level : MonoBehaviour, IHasChanged
 
     private void UpdateDifficultyText()
     {
-        difficultyText.text = "Difficulty: " + (Difficulty / 10).ToString();
-        if (Difficulty == 10)
-            difficultyText.text += " (Min)";
-        if (Difficulty == 100)
-            difficultyText.text += " (Max)";
+        if (Difficulty < 40)
+            difficultyText.text = "Easy";
+        else if (Difficulty > 60)
+            difficultyText.text = "Hard";
+        else
+            difficultyText.text = "Medium";
+        difficultyText.text += " (" + (Difficulty / 10).ToString() + ")";
     }
 }
