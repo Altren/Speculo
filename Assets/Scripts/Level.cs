@@ -311,7 +311,11 @@ public class Level : MonoBehaviour, IHasChanged
             {
                 var laserItem = laserItems[i, j].GetComponent<LaserItem>();
                 bool returnToSelf;
-                laserItem.currentLength = DrawLaserPath(i, j, false, out returnToSelf);
+                int currentLength;
+                currentLength = DrawLaserPath(i, j, false, out returnToSelf);
+
+                laserItem.currentReturnToSelf = returnToSelf;
+                laserItem.currentLength = currentLength;
 
                 if (laserItem.currentLength != laserItem.requiredLength || laserItem.returnToSelf != returnToSelf)
                     lasersDone = false;

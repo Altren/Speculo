@@ -20,6 +20,7 @@ public class LaserItem : MonoBehaviour
     private int _requiredLength = 0;
     private int _currentLength = 0;
     public bool returnToSelf = false;
+    public bool currentReturnToSelf = false;
 
     private bool _drawCurrent = false;
     public int requiredLength
@@ -56,7 +57,7 @@ public class LaserItem : MonoBehaviour
     {
         text.text = (drawCurrent ? currentLength : requiredLength).ToString();
         if (returnToSelf)
-            image.sprite = _currentLength == _requiredLength ? goodLengthReturn : badLengthReturn;
+            image.sprite = (_currentLength == _requiredLength && currentReturnToSelf == returnToSelf) ? goodLengthReturn : badLengthReturn;
         else
             image.sprite = _currentLength == _requiredLength ? goodLength : badLength;
     }
