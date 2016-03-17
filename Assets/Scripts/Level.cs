@@ -119,8 +119,20 @@ public class Level : MonoBehaviour, IHasChanged
 
     private void FitGridToScreen()
     {
+        int inventoryCellSize = 80;
+        if (Screen.height > Screen.width)
+            inventoryCellSize = Screen.width / 6;
+
+        inventory.GetComponent<GridLayoutGroup>().cellSize = new Vector2(inventoryCellSize, inventoryCellSize);
+        foreach (var slot in inventory.slots)
+        {
+            slot.Value.GetComponent<GridLayoutGroup>().cellSize = new Vector2(inventoryCellSize, inventoryCellSize);
+            slot.Value.GetComponent<GridLayoutGroup>().spacing = new Vector2(0, -inventoryCellSize);
+        }
+        
+
         int freeWidth = Screen.width;
-        int freeHeight = Screen.height - 80/*(int)inventory.GetComponent<RectTransform>().rect.height*/;
+        int freeHeight = Screen.height - 2 * inventoryCellSize;
         int cellSize = Math.Min(freeWidth, freeHeight) / (LevelSize + 2);
         // remove previous childrens
         foreach (var item in uiGrids)
@@ -179,7 +191,7 @@ public class Level : MonoBehaviour, IHasChanged
         {
             for (int j = 0; j < LevelSize; j++)
             {
-                laserItems[i, j].requiredLength = DrawLaserPath(i, j, false);
+                laserItems[i, j].requiredLength = DrawLaserPath(i, j, false, out laserItems[i, j].returnToSelf);
             }
         }
 
@@ -218,7 +230,8 @@ public class Level : MonoBehaviour, IHasChanged
     private void OnLaserDown(int i, int j)
     {
         laserItems[i, j].drawCurrent = true;
-        DrawLaserPath(i, j, true);
+        bool dummy;
+        DrawLaserPath(i, j, true, out dummy);
     }
 
     private void OnLaserUp(int i, int j)
@@ -243,9 +256,10 @@ public class Level : MonoBehaviour, IHasChanged
             for (int j = 0; j < LevelSize; j++)
             {
                 var laserItem = laserItems[i, j].GetComponent<LaserItem>();
-                laserItem.currentLength = DrawLaserPath(i, j, false);
+                bool returnToSelf;
+                laserItem.currentLength = DrawLaserPath(i, j, false, out returnToSelf);
 
-                if (laserItem.currentLength != laserItem.requiredLength)
+                if (laserItem.currentLength != laserItem.requiredLength || laserItem.returnToSelf != returnToSelf)
                     lasersDone = false;
             }
         }
@@ -273,7 +287,7 @@ public class Level : MonoBehaviour, IHasChanged
         b = c;
     }
 
-    private int DrawLaserPath(int i, int j, bool drawLine)
+    private int DrawLaserPath(int i, int j, bool drawLine, out bool returnToSelf)
     {
         LineDrawer line = null;
         if (drawLine)
@@ -285,6 +299,9 @@ public class Level : MonoBehaviour, IHasChanged
         int y = positions[i, 1];
         int dx = directions[i, 0];
         int dy = directions[i, 1];
+
+        int startX = x;
+        int startY = y;
 
         int length = 0;
 
@@ -312,7 +329,7 @@ public class Level : MonoBehaviour, IHasChanged
                 dx = -dx;
                 dy = -dy;
             }
-            else if(itemType == Item.Type.Item_Mirror_TR_BL)
+            else if (itemType == Item.Type.Item_Mirror_TR_BL)
             {
                 Swap(ref dx, ref dy);
             }
@@ -338,6 +355,8 @@ public class Level : MonoBehaviour, IHasChanged
 
         if (line != null)
             line.AddPoint(GetLaserItem(x, y));
+
+        returnToSelf = (x == startX && y == startY);
 
         return length;
     }

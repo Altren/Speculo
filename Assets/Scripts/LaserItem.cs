@@ -12,9 +12,15 @@ public class LaserItem : MonoBehaviour
     Sprite goodLength = null;
     [SerializeField]
     Sprite badLength = null;
+    [SerializeField]
+    Sprite goodLengthReturn = null;
+    [SerializeField]
+    Sprite badLengthReturn = null;
 
-    private int _requiredLength;
-    private int _currentLength;
+    private int _requiredLength = 0;
+    private int _currentLength = 0;
+    public bool returnToSelf = false;
+
     private bool _drawCurrent = false;
     public int requiredLength
     {
@@ -49,7 +55,10 @@ public class LaserItem : MonoBehaviour
     private void UpdateVisuals()
     {
         text.text = (drawCurrent ? currentLength : requiredLength).ToString();
-        image.sprite = _currentLength == _requiredLength ? goodLength : badLength;
+        if (returnToSelf)
+            image.sprite = _currentLength == _requiredLength ? goodLengthReturn : badLengthReturn;
+        else
+            image.sprite = _currentLength == _requiredLength ? goodLength : badLength;
     }
 
     // Use this for initialization

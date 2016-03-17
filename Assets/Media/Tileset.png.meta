@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 9f00a6d808cd90e4282ce0e480b41ec2
-timeCreated: 1456255821
+timeCreated: 1458170700
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -12,14 +12,14 @@ TextureImporter:
     21300010: Item_Warp
     21300012: Tileset_6
     21300014: Tileset_7
-    21300016: Lamp_Good
-    21300018: Lamp_Bad
+    21300016: Tileset_8
+    21300018: Tileset_9
     21300020: Tileset_10
     21300022: Tileset_11
-    21300024: Tileset_12
-    21300026: Tileset_13
-    21300028: Tileset_14
-    21300030: Tileset_15
+    21300024: Lamp_Good
+    21300026: Lamp_Bad
+    21300028: Lamp_Good_Return
+    21300030: Lamp_Bad_Return
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -179,14 +179,14 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -64, y: 64}
         - {x: -64, y: -64}
         - {x: 64, y: -64}
         - {x: 64, y: 64}
-    - name: Lamp_Good
+    - name: Tileset_8
       rect:
         serializedVersion: 2
         x: 0
@@ -201,7 +201,7 @@ TextureImporter:
         - {x: -64, y: -64}
         - {x: 64, y: -64}
         - {x: 64, y: 64}
-    - name: Lamp_Bad
+    - name: Tileset_9
       rect:
         serializedVersion: 2
         x: 128
@@ -224,7 +224,7 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -64, y: 64}
@@ -239,14 +239,14 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -64, y: 64}
         - {x: -64, y: -64}
         - {x: 64, y: -64}
         - {x: 64, y: 64}
-    - name: Tileset_12
+    - name: Lamp_Good
       rect:
         serializedVersion: 2
         x: 0
@@ -254,29 +254,29 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -64, y: 64}
         - {x: -64, y: -64}
         - {x: 64, y: -64}
         - {x: 64, y: 64}
-    - name: Tileset_13
+    - name: Lamp_Bad
       rect:
         serializedVersion: 2
         x: 128
-        y: 0
+        y: 1
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -64, y: 64}
         - {x: -64, y: -64}
         - {x: 64, y: -64}
         - {x: 64, y: 64}
-    - name: Tileset_14
+    - name: Lamp_Good_Return
       rect:
         serializedVersion: 2
         x: 256
@@ -284,14 +284,14 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -64, y: 64}
         - {x: -64, y: -64}
         - {x: 64, y: -64}
         - {x: 64, y: 64}
-    - name: Tileset_15
+    - name: Lamp_Bad_Return
       rect:
         serializedVersion: 2
         x: 384
@@ -299,7 +299,7 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -64, y: 64}
