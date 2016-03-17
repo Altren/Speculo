@@ -41,6 +41,8 @@ public class Level : MonoBehaviour, IHasChanged
     LaserItem[,] laserItems;
 
     LineDrawer[,] laserLines;
+
+    private int[,] warppoint;
     
     int LevelSize = 4;
     int Difficulty = 30;
@@ -129,7 +131,6 @@ public class Level : MonoBehaviour, IHasChanged
             slot.Value.GetComponent<GridLayoutGroup>().cellSize = new Vector2(inventoryCellSize, inventoryCellSize);
             slot.Value.GetComponent<GridLayoutGroup>().spacing = new Vector2(0, -inventoryCellSize);
         }
-        
 
         int freeWidth = Screen.width;
         int freeHeight = Screen.height - 2 * inventoryCellSize;
@@ -161,6 +162,7 @@ public class Level : MonoBehaviour, IHasChanged
     {
         CreateLevelUiGrid();
         ClearInventory();
+        warppoint = new int[2, 2] { { -1, -1 }, { -1, -1 } };
         counter++;
         UnityEngine.Random.seed = counter;
         int difficulty = Difficulty; // original game had 10, 25, 40 for easy, medium, hard
@@ -185,6 +187,35 @@ public class Level : MonoBehaviour, IHasChanged
                     cellItems[i, j].AddItem(newItem);
                 }
             }
+        }
+
+        // add two warps
+        int nwarps = 2;
+        if (difficulty <= 30 || LevelSize < 5)
+            nwarps = 0;
+        else if (LevelSize < 10 )
+            nwarps = 2 * UnityEngine.Random.Range(0, 2); // 50% for 0 and 50% for 2
+
+        int tryCounter = 0;
+        while (nwarps > 0 && tryCounter < 50)
+        {
+            int x = UnityEngine.Random.Range(0, LevelSize);
+            int y = UnityEngine.Random.Range(0, LevelSize);
+            if (cellItems[y, x].itemType == Item.Type.None)
+            {
+                Image newItem = (Image)Instantiate(Resources.Load(Item.Type.Item_Warp.ToString(), typeof(Image)));
+                cellItems[y, x].AddItem(newItem);
+                nwarps--;
+                warppoint[nwarps, 0] = x;
+                warppoint[nwarps, 1] = y;
+            }
+            tryCounter++;
+        }
+        if (tryCounter == 50)
+            Debug.LogError("Too many warp tries.");
+        if (nwarps == 1)
+        {
+            cellItems[warppoint[0, 1], warppoint[0, 0]].DestroyItem();
         }
 
         for (int i = 0; i < 4; i++)
@@ -250,6 +281,29 @@ public class Level : MonoBehaviour, IHasChanged
 
     public void HasChanged()
     {
+        // update warp points
+        warppoint = new int[2, 2] { { -1, -1 }, { -1, -1 } };
+        int warpIndex = 0;
+        for (int x = 0; x < LevelSize; x++)
+        {
+            for (int y = 0; y < LevelSize; y++)
+            {
+                if (cellItems[y, x].itemType == Item.Type.Item_Warp)
+                {
+                    warppoint[warpIndex, 0] = x;
+                    warppoint[warpIndex, 1] = y;
+                    warpIndex++;
+                }
+            }
+        }
+
+        // check for level completion
+        if (IsLevelCompleted())
+            GenerateNewLevel();
+    }
+
+    private bool IsLevelCompleted()
+    {
         bool lasersDone = true;
         for (int i = 0; i < 4; i++)
         {
@@ -274,10 +328,7 @@ public class Level : MonoBehaviour, IHasChanged
             }
         }
 
-        if (itemsDone && DragHelper.itemBeingDragged == null && lasersDone)
-        {
-            GenerateNewLevel();
-        }
+        return itemsDone && DragHelper.itemBeingDragged == null && lasersDone;
     }
 
     static void Swap<T>(ref T a, ref T b)
@@ -314,7 +365,7 @@ public class Level : MonoBehaviour, IHasChanged
         x += dx;
         y += dy;
 
-        while (x >= 0 && y >= 0 && x < LevelSize && y < LevelSize)
+        while (x >= 0 && y >= 0 && x < LevelSize && y < LevelSize && length < 1000)
         {
             CellItem slot = cellItems[y, x];
 
@@ -346,6 +397,29 @@ public class Level : MonoBehaviour, IHasChanged
                 dx = -dx;
                 dy = -dy;
             }
+            else if (itemType == Item.Type.Item_Warp)
+            {
+                int warpPointIndex = 0;
+                if (x == warppoint[0, 0] && y == warppoint[0, 1])
+                    warpPointIndex = 0;
+                else if (x == warppoint[1, 0] && y == warppoint[1, 1])
+                    warpPointIndex = 1;
+
+                if ((warppoint[1 - warpPointIndex,0] == -1) && (warppoint[1 - warpPointIndex,1] == -1))
+                {
+                    x = -1;
+                    y = -1;
+                    dx = 0;
+                    dy = 0;
+                }
+                else
+                {
+                    x = warppoint[1 - warpPointIndex,0];
+                    y = warppoint[1 - warpPointIndex,1];
+                    if (line != null)
+                        line.AddPoint(cellItems[y, x]);
+                }
+            }
 
             x += dx;
             y += dy;
@@ -353,8 +427,9 @@ public class Level : MonoBehaviour, IHasChanged
             length++;
         }
 
-        if (line != null)
-            line.AddPoint(GetLaserItem(x, y));
+        var item = GetLaserItem(x, y);
+        if (line != null && item != null)
+            line.AddPoint(item);
 
         returnToSelf = (x == startX && y == startY);
 
